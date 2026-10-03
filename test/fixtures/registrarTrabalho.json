@@ -1,0 +1,25 @@
+[
+
+    {
+        "testTitle":"Validar que um aluno consegue registrar a entrega de um novo trabalho",
+        "dadosAluno": {
+            "nome": "Helena Martins",
+            "email": "helena.ma@example.com",
+            "matricula": "2026-002",
+            "senha": "123456"
+        },
+        "dadosDisciplina": {
+            "nome": "Inteligência Emocional",
+            "codigo": "IE1",
+            "cargaHoraria": 60
+
+        },
+        "dadosTrabalho":{
+            "titulo": "Inteligencia Emocional e seus pilares",
+            "descricao": "Quais são os pilares e como desenvolver a habilidade"
+        },
+
+        "statusCodeEsperado": 201
+
+    }
+]
