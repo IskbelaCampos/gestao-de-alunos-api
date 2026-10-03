@@ -1,14 +1,41 @@
 name: Testes de API
 
 on:
+  workflow_dispatch:
+  schedule:
+    # Lisboa uses UTC+0 in winter and UTC+1 in summer.
+    - cron: '0 5,6 * * 0,2,4'
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  test:
+  schedule-check:
     runs-on: ubuntu-latest
+    outputs:
+      run_tests: ${{ steps.check.outputs.run_tests }}
+    steps:
+      - id: check
+        name: Verificar horário do agendamento
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" != "schedule" ] || [ "$(TZ=Europe/Lisbon date +%H)" = "06" ]; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    needs: schedule-check
+    if: needs.schedule-check.outputs.run_tests == 'true'
+    runs-on: ubuntu-latest
+
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/gestao-de-alunos-test
+      ADMIN_EMAIL: admin@escola.com
+      ADMIN_PASSWORD: admin123
 
     services:
       mongodb:
@@ -34,7 +61,29 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Iniciar API
+        run: |
+          npm start > /tmp/gestao-de-alunos-api.log 2>&1 &
+          api_pid=$!
+
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then
+              echo "API pronta para os testes."
+              exit 0
+            fi
+
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              cat /tmp/gestao-de-alunos-api.log
+              echo "A API encerrou antes de ficar pronta."
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          cat /tmp/gestao-de-alunos-api.log
+          echo "A API não ficou pronta dentro do tempo limite."
+          exit 1
+
       - name: Executar testes
         run: npm test
-        env:
-          MONGODB_URI: mongodb://127.0.0.1:27017/gestao-de-alunos-test

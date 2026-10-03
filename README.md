@@ -111,6 +111,48 @@ Na primeira execução com o banco vazio, a API popula automaticamente as coleç
 dados fake descrito em [Dados fake pré-carregados](#dados-fake-pré-carregados). Em execuções
 seguintes, os dados já existentes são preservados.
 
+## Testes automatizados
+
+Os testes de integração ficam em `test/` e enviam requisições para a API em
+`http://localhost:3000`. Para executá-los localmente, deixe um MongoDB acessível e inicie a API
+usando um banco separado para testes. Em um terminal:
+
+```bash
+MONGODB_URI="mongodb://127.0.0.1:27017/gestao-de-alunos-test" npm start
+```
+
+Em outro terminal, na raiz do projeto, execute:
+
+```bash
+ADMIN_EMAIL="admin@escola.com" ADMIN_PASSWORD="admin123" npm test
+```
+
+No PowerShell, configure a variável antes de iniciar a API:
+
+```powershell
+$env:MONGODB_URI = "mongodb://127.0.0.1:27017/gestao-de-alunos-test"
+npm start
+```
+
+No segundo terminal do PowerShell, configure as credenciais do administrador seedado e execute os
+testes:
+
+```powershell
+$env:ADMIN_EMAIL = "admin@escola.com"
+$env:ADMIN_PASSWORD = "admin123"
+npm test
+```
+
+A API deve continuar em execução durante os testes. Use um banco exclusivo de testes: os testes
+criam e removem registros e não devem ser executados contra dados de produção.
+
+O workflow [`.github/workflows/tests.yml`](.github/workflows/tests.yml) executa `npm test` em
+pushes e pull requests direcionados à branch `main`, pode ser iniciado manualmente pela aba
+**Actions** e também roda às 6h (horário de Lisboa) aos domingos, terças e quintas. O agendamento
+considera as mudanças entre horário de verão e de inverno de Lisboa. O workflow inicia um MongoDB,
+instala as dependências com `npm ci`, sobe a API apontando para um banco de testes e aguarda a API
+ficar disponível antes de rodar a suíte.
+
 ## Documentação da API (Swagger)
 
 A documentação completa de todas as rotas, parâmetros, corpos de requisição e respostas está
