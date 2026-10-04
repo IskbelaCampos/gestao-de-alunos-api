@@ -3,9 +3,9 @@ name: Testes de API
 on:
   workflow_dispatch:
 
-  schedule:
-   - cron: '3-58/5 * * * *'
-      timezone: 'Europe/Lisbon'
+schedule:
+  - cron: '3,8,13,18,23,28,33,38,43,48,53,58 * * * *'
+    timezone: 'Europe/Lisbon'
 
   push:
     branches: [main]
