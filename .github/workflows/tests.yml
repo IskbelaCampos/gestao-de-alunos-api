@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
 
   schedule:
-   
-    - cron: '45 13 * * 0'
+    - cron: '*/5 * * * *'
       timezone: 'Europe/Lisbon'
 
   push:
