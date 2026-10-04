@@ -2,40 +2,27 @@ name: Testes de API
 
 on:
   workflow_dispatch:
+
   schedule:
-    # Lisboa uses UTC+0 in winter and UTC+1 in summer.
-    - cron: '0 5,6 * * 0,2,4'
+   
+    - cron: '45 13 * * 0'
+      timezone: 'Europe/Lisbon'
+
   push:
     branches: [main]
+
   pull_request:
     branches: [main]
 
-jobs:
-  schedule-check:
-    runs-on: ubuntu-latest
-    outputs:
-      run_tests: ${{ steps.check.outputs.run_tests }}
-    steps:
-      - id: check
-        name: Verificar horário do agendamento
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT_NAME" != "schedule" ] || [ "$(TZ=Europe/Lisbon date +%H)" = "06" ]; then
-            echo "run_tests=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run_tests=false" >> "$GITHUB_OUTPUT"
-          fi
 
+jobs:
   test:
-    needs: schedule-check
-    if: needs.schedule-check.outputs.run_tests == 'true'
     runs-on: ubuntu-latest
 
     env:
       MONGODB_URI: mongodb://127.0.0.1:27017/gestao-de-alunos-test
-      ADMIN_EMAIL: admin@escola.com
-      ADMIN_PASSWORD: admin123
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
     services:
       mongodb:
